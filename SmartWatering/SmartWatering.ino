@@ -23,8 +23,17 @@ byte left_arrow[8] = {
   B00001, B00011, B00111, B01111, B00111, B00011, B00001, B00000
 };
 
-byte down_arrow[8] = {
+byte up_down_arrow[8] = {
   B00100, B01110, B11111, B00000, B00000, B11111, B01110, B00100
+};
+byte up_arrow[8] = {
+  B00100, B01110, B11111, B00000, B00000, B00000, B00000, B00000
+};
+byte down_arrow[8] = {
+  B00000, B00000, B00000, B00000, B00000, B11111, B01110, B00100
+};
+byte key[8] = {
+  B01110, B10001, B10001, B01110, B00100, B00110, B00100, B00110
 };
 #define btnRIGHT  0
 #define btnUP     1
@@ -32,14 +41,18 @@ byte down_arrow[8] = {
 #define btnLEFT   3
 #define btnSELECT 4
 #define btnNONE   5
+const int _MAIN_MENU_RETURN_SECONDS_ = 10;
 int adc_key_in = 0;
 int humidity = 45;
-int hourValue = 0;
-int minuteValue = 0;
-int secondValue = 0;
+int hourValue = 14;
+int minuteValue = 34;
+int secondValue = 42;
 int old_key = btnNONE;
 bool isNavigationMode = true;
 int screenNo = 0;
+int lastActiveScreenNo = 0;
+int counter = 0;
+int mainMenuReturnCounter = _MAIN_MENU_RETURN_SECONDS_;
 
 int read_LCD_buttons()
 {
@@ -53,114 +66,159 @@ int read_LCD_buttons()
   if (adc_key_in < 875)  return btnSELECT;
   return btnNONE;
 };
-void drawScreen(int screenno)
+void drawScreen()
 {
-  lcd.clear();
-  switch (screenno)
+  switch (screenNo)
   {
+    //    case 0:
+    //      lastActiveScreenNo = screenNo;
+    //      lcd.clear();
+    //      lcd.setCursor(2, 0);
+    //      lcd.print("Akilli Sulama");
+    //      lcd.setCursor(3, 1);
+    //      lcd.print("K-R System");
+    //      break;
     case 0:
-      lcd.setCursor(2, 0);
-      lcd.print("Akilli Sulama");
-      lcd.setCursor(3, 1);
-      lcd.print("K-R System");
-      break;
-    case 1:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
       lcd.setCursor(0, 0);
+      if(isNavigationMode)
+      {
+        lcd.write(byte(6));
+      }
+      else
+      {
+        lcd.write(byte(7));
+      }
+      lcd.setCursor(2, 0);
       lcd.write(byte(0));
       lcd.write(" %");
       lcd.print(humidity);
-      lcd.setCursor(8, 0);
+      lcd.setCursor(11, 0);
       if (hourValue < 10) lcd.print("0");
       lcd.print(hourValue);
       lcd.print(":");
       if (minuteValue < 10) lcd.print("0");
       lcd.print(minuteValue);
-      lcd.print(":");
-      if (secondValue < 10) lcd.print("0");
-      lcd.print(secondValue);
+      break;
+    case 1:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.write(byte(4));
+      lcd.setCursor(2, 0);
+      lcd.print("1. Bolge");
+      lcd.setCursor(1, 1);
+      lcd.print("3 gunde 17:30");
+      lcd.setCursor(15, 1);
+      lcd.write(byte(2));
       break;
     case 2:
-      lcd.setCursor(4, 0);
-      lcd.print("1. Bolge");
-      lcd.setCursor(0, 1);
-      lcd.print("2 gunde    16:30");
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.write(byte(4));
+      lcd.setCursor(2, 0);
+      lcd.print("2. Bolge");
+      lcd.setCursor(1, 1);
+      lcd.print("Hergun  17:30");
+      lcd.setCursor(15, 1);
+      lcd.write(byte(2));
       break;
     case 3:
-      lcd.setCursor(4, 0);
-      lcd.print("2. Bolge");
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.write(byte(4));
+      lcd.setCursor(2, 0);
+      lcd.print("1. Bolge");
       lcd.setCursor(0, 1);
-      lcd.print("Hergun     17:30");
+      lcd.print("Sulama Yap");
       break;
     case 4:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("1. Bolge");
+      lcd.write(byte(4));
+      lcd.setCursor(2, 0);
+      lcd.print("2. Bolge");
       lcd.setCursor(0, 1);
       lcd.print("Sulama Yap");
       break;
     case 5:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("2. Bolge");
-      lcd.setCursor(0, 1);
-      lcd.print("Sulama Yap");
-      break;
-    case 6:
-      lcd.setCursor(0, 0);
+      lcd.write(byte(5));
+      lcd.setCursor(2, 0);
       lcd.print("Saat Ayarla");
       lcd.setCursor(0, 1);
       lcd.print("xx:xx");
       break;
-    case 20:
+    case 10:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("+ 1. Bolge Ayar ");
+      lcd.write(byte(6));
+      lcd.setCursor(2, 0);
+      lcd.print("1. Bolge Ayar ");
       lcd.setCursor(0, 1);
+      lcd.write(byte(3));
+      lcd.setCursor(2, 1);
       lcd.print("Saat xx:xx");
       break;
-    case 21:
+    case 11:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("+ 1. Bolge Ayar ");
+      lcd.write(byte(4));
+      lcd.setCursor(2, 0);
+      lcd.print("1. Bolge Ayar ");
       lcd.setCursor(0, 1);
-      lcd.print("Saat xx:xx");
-      break;
-    case 22:
-      lcd.setCursor(0, 0);
-      lcd.print("+ 1. Bolge Ayar ");
-      lcd.setCursor(0, 1);
+      lcd.write(byte(3));
+      lcd.setCursor(2, 1);
       lcd.print("Nem %x");
       break;
-    case 23:
+    case 12:
+      lastActiveScreenNo = screenNo;
+      lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("+ 1. Bolge Ayar ");
+      lcd.write(byte(5));
+      lcd.setCursor(2, 0);
+      lcd.print("1. Bolge Ayar ");
       lcd.setCursor(0, 1);
+      lcd.write(byte(3));
+      lcd.setCursor(2, 1);
       lcd.print("Sure x dk");
       break;
-    case 200:
-      lcd.setCursor(0, 0);
-      lcd.print("Sulama saati");
-      lcd.setCursor(0, 1);
-      lcd.print("xx:xx ayarlandi");
+    default:
+      screenNo = lastActiveScreenNo;
       break;
   }
 }
 void analyseKeys()
-{
+{  
   int lcd_key = read_LCD_buttons();
-  lcd.clear();
-  lcd.setCursor(2, 1);
-  lcd.print(analogRead(0));
   if (lcd_key != old_key)
   {
     if (lcd_key == btnNONE)
     {
       button_Up_Event(old_key);
-
     }
     old_key = lcd_key;
   }
 }
 void button_Up_Event(int button)
 {
+  mainMenuReturnCounter = _MAIN_MENU_RETURN_SECONDS_;
+  if (button == btnSELECT)
+  {
+    isNavigationMode = !isNavigationMode;
+  }
   if (isNavigationMode)
   {
+    //lcd.noCursor();
+    lcd.noBlink();
     switch (button)
     {
       case btnDOWN:
@@ -176,7 +234,14 @@ void button_Up_Event(int button)
         screenNo = screenNo * 10;
         break;
     }
-    //drawScreen(screenNo);
+    drawScreen();
+    //lcd.setCursor(2, 0);
+    //lcd.print(screenNo);
+  }
+  else
+  {
+    //lcd.cursor();
+    lcd.blink();
   }
 }
 void setup()
@@ -186,159 +251,46 @@ void setup()
   lcd.createChar(1, valve);
   lcd.createChar(2, right_arrow);
   lcd.createChar(3, left_arrow);
-  lcd.createChar(4, down_arrow);
-  drawScreen(0);
-  delay(1000);
-  drawScreen(1);
+  lcd.createChar(4, up_down_arrow);
+  lcd.createChar(5, up_arrow);
+  lcd.createChar(6, down_arrow);
+  lcd.createChar(7, key);
+  screenNo = 0;
+  drawScreen();
+}
+void mainScreenDisplay()
+{
+  if (counter % 100 == 0)
+  {
+    minuteValue++;
+    if(isNavigationMode)
+    {
+      mainMenuReturnCounter--;
+    }  
+    if(mainMenuReturnCounter < 0)
+    {
+      mainMenuReturnCounter = _MAIN_MENU_RETURN_SECONDS_;
+      isNavigationMode = false;
+      screenNo = 0;
+    }
+    if (!isNavigationMode && screenNo == 0)
+    {
+      drawScreen();
+    }      
+  }
 }
 void loop()
 {
+  counter++;
   analyseKeys();
-  delay(1);
-  //  lcd_key = read_LCD_buttons();
-  //  switch (lcd_key)
-  //  {
-  //    case btnDOWN:
-  //      {
-  //        if (bt_alt == false)
-  //        {
-  //          bt_alt = true;
-  //          j--;
-  //          if (j == 1) {
-  //            nem_ayar = true;
-  //            el_su = false;
-  //            bfr_nem = nem;
-  //          }
-  //          else if (j == 2) {
-  //            el_su = true;
-  //            nem_ayar = false;
-  //          }
-  //          else {
-  //            nem_ayar = false;
-  //            el_su = false;
-  //          }
-  //          i = 0;
-  //          if (j < 0) {
-  //            j = 0;
-  //          }
-  //        }
-  //        break;
-  //      }
-  //    case btnUP:
-  //      {
-  //        if (bt_ust == false)
-  //        {
-  //          bt_ust = true;
-  //          j++;
-  //          if (j > 2) {
-  //            j = 2; //menü sonu
-  //          }
-  //          if (j == 1) {
-  //            nem_ayar = true;
-  //            bfr_nem = nem;
-  //            el_su = false;
-  //          }
-  //          else if (j == 2) {
-  //            el_su = true;
-  //            nem_ayar = false;
-  //          }
-  //          else {
-  //            nem_ayar = false;
-  //            el_su = false;
-  //          }
-  //
-  //          i = 0;
-  //        }
-  //        break;
-  //      }
-  //
-  //    case btnRIGHT:
-  //      {
-  //        if (bt_sag == false)
-  //        {
-  //          bt_sag = true;
-  //          i++;
-  //          if (nem_ayar)
-  //          {
-  //            bfr_nem = bfr_nem + 5;
-  //            if (bfr_nem > 95)
-  //            {
-  //              bfr_nem = 95;
-  //            }
-  //          }
-  //        }
-  //        break;
-  //
-  //      }
-  //    case btnLEFT:
-  //      {
-  //        if (bt_sol == false)
-  //        {
-  //          i--;
-  //          if (i < 0) {
-  //            i = 0;
-  //          }
-  //          bt_sol = true;
-  //          if (nem_ayar)
-  //          {
-  //            bfr_nem = bfr_nem - 5;
-  //            if (bfr_nem < 10)
-  //            {
-  //              bfr_nem = 10;
-  //            }
-  //          }
-  //        }
-  //
-  //        break;
-  //
-  //      }
-  //    case btnNONE:
-  //      {
-  //        bt_sag = false;
-  //        bt_sol = false;
-  //        bt_ust = false;
-  //        bt_alt = false;
-  //        break;
-  //
-  //      }
-  //    case btnSELECT:
-  //      {
-  //        if (nem_ayar)
-  //        {
-  //          lcd.clear();
-  //          nem = bfr_nem;
-  //          lcd.setCursor(0, 0);
-  //          lcd.print("Nem degeri");
-  //          lcd.print("% ");
-  //          lcd.print(nem);
-  //          lcd.setCursor(0, 1);
-  //          lcd.print("olarak ayarlandi");
-  //          delay(1500);
-  //          lcd.clear();
-  //          nem_ayar = false;
-  //          i = 0; j = 0;
-  //        }
-  //        if (el_su)
-  //        {
-  //          lcd.clear();
-  //          lcd.setCursor(0, 0);
-  //          lcd.write(byte(1));
-  //          lcd.setCursor(1, 0);
-  //          lcd.print("    SULAMA");
-  //          lcd.setCursor(15, 0);
-  //          lcd.write(byte(1));
-  //          lcd.setCursor(0, 1);
-  //          for (int t = 0; t < 16; t++)
-  //            lcd.write(byte(0));
-  //          delay(3000);
-  //          el_su = false;
-  //          i = 0; j = 0;
-  //        }
-  //        break;
-  //      }
-  //
-  //  }
-  //
+  mainScreenDisplay();
+  delay(10);
+
+  if (counter > 6000)
+  {
+    counter = 0;
+  }
+  
   //  if (j == 0)
   //  {
   //    lcd.setCursor(0, 0);
